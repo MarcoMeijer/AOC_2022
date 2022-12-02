@@ -1,10 +1,11 @@
-mod day1;
+pub mod day1;
+pub mod day2;
 
 use std::fs;
 
-use day1::day1;
+use day2::*;
 
 fn main() {
     let file = fs::read_to_string("./in.txt").unwrap();
-    println!("{}", day1(&file));
+    println!("{}", day2_gold(&file));
 }
