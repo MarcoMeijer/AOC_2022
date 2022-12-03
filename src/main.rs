@@ -8,5 +8,5 @@ use day3::*;
 
 fn main() {
     let file = fs::read_to_string("./in.txt").unwrap();
-    println!("{}", day3_silver(&file));
+    println!("{}", day3_gold(&file));
 }
