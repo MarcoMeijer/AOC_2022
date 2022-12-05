@@ -8,8 +8,7 @@ use std::fs;
 
 use day5::*;
 
-fn main() -> Result<(), ()> {
+fn main() {
     let file = fs::read_to_string("./in.txt").unwrap();
-    println!("{}", day5_gold(&file).map_err(|_| ())?.1);
-    Ok(())
+    println!("{}", day5_gold(&file));
 }

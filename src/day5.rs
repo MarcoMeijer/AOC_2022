@@ -26,6 +26,11 @@ pub fn p_crate_line(input: &str) -> IResult<&str, Vec<Option<char>>> {
 
 pub fn p_ship(input: &str) -> IResult<&str, Vec<Vec<char>>> {
     let (input, lines) = separated_list1(newline, p_crate_line)(input)?;
+    let (input, _) = newline(input)?;
+    let (input, _) = not_line_ending(input)?;
+    let (input, _) = newline(input)?;
+    let (input, _) = newline(input)?;
+
     let mut result = vec![vec![]; lines[0].len()];
     for line in lines.iter() {
         for (i, c) in line.iter().enumerate() {
@@ -48,14 +53,9 @@ pub fn p_command(input: &str) -> IResult<&str, [usize; 3]> {
     Ok((input, [amount as usize, from as usize - 1, to as usize - 1]))
 }
 
-pub fn day5_silver(input: &str) -> IResult<&str, String> {
-    let (input, mut ship) = p_ship(input)?;
-    let (input, _) = not_line_ending(input)?;
-    let (input, _) = newline(input)?;
-    let (input, _) = not_line_ending(input)?;
-    let (input, _) = newline(input)?;
-    let (input, _) = newline(input)?;
-    let (input, commands) = separated_list0(newline, p_command)(input)?;
+pub fn day5_silver(input: &str) -> String {
+    let (input, mut ship) = p_ship(input).unwrap();
+    let (_, commands) = separated_list0(newline, p_command)(input).unwrap();
 
     for &[amount, from, to] in commands.iter() {
         let n = ship[from].len();
@@ -68,18 +68,12 @@ pub fn day5_silver(input: &str) -> IResult<&str, String> {
         ship[from].drain(n - amount..);
     }
 
-    let result = ship.iter().map(|x| x.last().unwrap()).collect::<String>();
-    Ok((input, result))
+    ship.iter().map(|x| x.last().unwrap()).collect()
 }
 
-pub fn day5_gold(input: &str) -> IResult<&str, String> {
-    let (input, mut ship) = p_ship(input)?;
-    let (input, _) = not_line_ending(input)?;
-    let (input, _) = newline(input)?;
-    let (input, _) = not_line_ending(input)?;
-    let (input, _) = newline(input)?;
-    let (input, _) = newline(input)?;
-    let (input, commands) = separated_list0(newline, p_command)(input)?;
+pub fn day5_gold(input: &str) -> String {
+    let (input, mut ship) = p_ship(input).unwrap();
+    let (_, commands) = separated_list0(newline, p_command)(input).unwrap();
 
     for &[amount, from, to] in commands.iter() {
         let n = ship[from].len();
@@ -91,8 +85,7 @@ pub fn day5_gold(input: &str) -> IResult<&str, String> {
         ship[from].drain(n - amount..);
     }
 
-    let result = ship.iter().map(|x| x.last().unwrap()).collect::<String>();
-    Ok((input, result))
+    ship.iter().map(|x| x.last().unwrap()).collect::<String>()
 }
 
 #[cfg(test)]
@@ -110,18 +103,14 @@ move 2 from 2 to 1
 move 1 from 1 to 2";
 
     #[test]
-    fn sample_silver() -> Result<(), ()> {
+    fn sample_silver() {
         let expected = "CMZ".to_string();
-        let (_, result) = day5_silver(INPUT).map_err(|_| ())?;
-        assert_eq!(result, expected);
-        Ok(())
+        assert_eq!(day5_silver(INPUT), expected);
     }
 
     #[test]
-    fn sample_gold() -> Result<(), ()> {
+    fn sample_gold() {
         let expected = "MCD".to_string();
-        let (_, result) = day5_gold(INPUT).map_err(|_| ())?;
-        assert_eq!(result, expected);
-        Ok(())
+        assert_eq!(day5_gold(INPUT), expected);
     }
 }
