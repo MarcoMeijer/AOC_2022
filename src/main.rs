@@ -2,12 +2,14 @@ pub mod day1;
 pub mod day2;
 pub mod day3;
 pub mod day4;
+pub mod day5;
 
 use std::fs;
 
-use day4::*;
+use day5::*;
 
-fn main() {
+fn main() -> Result<(), ()> {
     let file = fs::read_to_string("./in.txt").unwrap();
-    println!("{}", day4_gold(&file));
+    println!("{}", day5_gold(&file).map_err(|_| ())?.1);
+    Ok(())
 }
