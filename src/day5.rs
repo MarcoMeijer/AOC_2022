@@ -1,27 +1,21 @@
 use nom::branch::alt;
-use nom::character::complete::{newline, not_line_ending};
+use nom::character::complete::{alpha1, newline, not_line_ending};
 use nom::multi::{separated_list0, separated_list1};
-use nom::{bytes::streaming::tag, character::complete, character::complete::anychar, IResult};
+use nom::sequence::delimited;
+use nom::{bytes::streaming::tag, character::complete, IResult};
 
-pub fn p_crate(input: &str) -> IResult<&str, char> {
-    let (input, _) = tag("[")(input)?;
-    let (input, c) = anychar(input)?;
-    let (input, _) = tag("]")(input)?;
-    Ok((input, c))
-}
+pub fn p_crate(input: &str) -> IResult<&str, Option<char>> {
+    let (input, c) = alt((tag("   "), delimited(tag("["), alpha1, tag("]"))))(input)?;
 
-pub fn p_empty_crate(input: &str) -> IResult<&str, char> {
-    let (input, _) = tag("   ")(input)?;
-    Ok((input, ' '))
-}
-
-pub fn p_option_crate(input: &str) -> IResult<&str, Option<char>> {
-    let (input, c) = alt((p_crate, p_empty_crate))(input)?;
-    Ok((input, if c == ' ' { None } else { Some(c) }))
+    let result = match c {
+        "   " => None,
+        s => Some(s.as_bytes()[0] as char),
+    };
+    Ok((input, result))
 }
 
 pub fn p_crate_line(input: &str) -> IResult<&str, Vec<Option<char>>> {
-    separated_list1(tag(" "), p_option_crate)(input)
+    separated_list1(tag(" "), p_crate)(input)
 }
 
 pub fn p_ship(input: &str) -> IResult<&str, Vec<Vec<char>>> {
