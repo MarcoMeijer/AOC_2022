@@ -3,12 +3,13 @@ pub mod day2;
 pub mod day3;
 pub mod day4;
 pub mod day5;
+pub mod day6;
 
 use std::fs;
 
-use day5::*;
+use day6::*;
 
 fn main() {
     let file = fs::read_to_string("./in.txt").unwrap();
-    println!("{}", day5_gold(&file));
+    println!("{}", day6_gold(&file));
 }
