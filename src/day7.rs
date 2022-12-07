@@ -56,8 +56,8 @@ fn p_command(input: &str) -> IResult<&str, Command> {
     alt((p_cd, p_ls))(input)
 }
 
-pub fn day7_silver(input: &str) -> String {
-    let (_, commands) = separated_list1(newline, p_command)(input).unwrap();
+pub fn p_directory_sizes(input: &str) -> IResult<&str, HashMap<String, u64>> {
+    let (input, commands) = separated_list1(newline, p_command)(input)?;
 
     let mut stack = vec!["/".to_string()];
     let mut dirs = HashMap::new();
@@ -71,7 +71,7 @@ pub fn day7_silver(input: &str) -> String {
                 }
                 "/" => stack = vec!["/".to_string()],
                 _ => {
-                    stack.push(format!("{cur_dir}/{dir}").to_string());
+                    stack.push(format!("{cur_dir}{dir}/").to_string());
                 }
             },
             Command::Ls(items) => {
@@ -89,13 +89,19 @@ pub fn day7_silver(input: &str) -> String {
             .iter()
             .map(|item| match item {
                 Item::Directory(name) => dir_size
-                    .get(&format!("{cur_dir}/{name}").to_string())
+                    .get(&format!("{cur_dir}{name}/").to_string())
                     .unwrap(),
                 Item::File(size, _) => size,
             })
             .sum();
         dir_size.insert(cur_dir, size);
     }
+
+    Ok((input, dir_size))
+}
+
+pub fn day7_silver(input: &str) -> String {
+    let (_, dir_size) = p_directory_sizes(input).unwrap();
 
     let total: u64 = dir_size
         .into_iter()
@@ -107,48 +113,9 @@ pub fn day7_silver(input: &str) -> String {
 }
 
 pub fn day7_gold(input: &str) -> String {
-    let (_, commands) = separated_list1(newline, p_command)(input).unwrap();
+    let (_, dir_size) = p_directory_sizes(input).unwrap();
 
-    let mut stack = vec!["/".to_string()];
-    let mut dirs = HashMap::new();
-
-    for command in commands.iter() {
-        let cur_dir = stack.last().unwrap().clone();
-        match command {
-            Command::Cd(dir) => match dir.as_str() {
-                ".." => {
-                    stack.pop();
-                }
-                "/" => stack = vec!["/".to_string()],
-                _ => {
-                    stack.push(format!("{cur_dir}/{dir}").to_string());
-                }
-            },
-            Command::Ls(items) => {
-                dirs.insert(cur_dir, items);
-            }
-        };
-    }
-
-    let mut dirs: Vec<_> = dirs.into_iter().collect();
-    dirs.sort_by(|x, y| y.0.len().cmp(&x.0.len()));
-    let mut dir_size = HashMap::new();
-    for (k, items) in dirs.iter() {
-        let cur_dir = k.clone();
-        let size: u64 = items
-            .iter()
-            .map(|item| match item {
-                Item::Directory(name) => dir_size
-                    .get(&format!("{cur_dir}/{name}").to_string())
-                    .unwrap(),
-                Item::File(size, _) => size,
-            })
-            .sum();
-        dir_size.insert(cur_dir, size);
-    }
-
-    let total: u64 = dir_size[&"/".to_string()];
-    let needed: u64 = total - 40000000;
+    let needed: u64 = dir_size[&"/".to_string()] - 40000000;
     let mut solutions: Vec<u64> = dir_size
         .into_iter()
         .map(|x| x.1)
